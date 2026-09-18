@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# Build artifacts
+build/
+dist/
+out/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+
+# C/C++
+CMakeFiles/
+CMakeCache.txt
+cmake-build-*/
+
+# IDE/editor
+.vscode/
+.idea/
+.DS_Store
+
+# Notes
+TODO.md
