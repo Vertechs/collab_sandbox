@@ -14,10 +14,9 @@ class signal_consumer():
 
     def loop(self):
         with zenoh.open(zenoh.Config()) as session:
-            with session.declare_subscriber(self.key) as subsc:
-                for sample in subsc:
-                    val = struct.unpack("f",sample.payload.to_bytes())
-                    print(f"At {sample.timestamp}, {sample.key_expr} said {sample.payload.to_bytes().hex()} means {val}")
+            for response in session.get("**"):
+                response = response.ok
+                print(f"{response.key_expr} => {response.payload.to_string()}")
                 
                 
 if __name__ == "__main__":
