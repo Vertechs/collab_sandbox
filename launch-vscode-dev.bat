@@ -22,4 +22,4 @@ if errorlevel 1 (
     exit /b 1
 )
 
-code "%~dp0..\collab_sandbox.code-workspace"
+code "%~dp0\collab_sandbox.code-workspace"
