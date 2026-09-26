@@ -1,0 +1,124 @@
+// // #include <stdio.h>
+// // Vibe-coded test: read DHT22 on pin 13, publish over Zenoh
+// // Key expression is TBD — fill in before running
+
+// // #include <Arduino.h>
+// // #include <DHT.h>
+// // #include "zenoh-pico.h"
+
+// #define DHT_PIN   13
+// #define DHT_TYPE  DHT22
+
+// #define ZENOH_MODE   "client"
+// #define ZENOH_LOCATOR ""   // TBD — router/peer address, e.g. "tcp/192.168.1.50:7447"
+// #define ZENOH_KEY    ""    // TBD
+
+// static DHT dht(DHT_PIN, DHT_TYPE);
+// static z_owned_session_t s_session;
+// static z_owned_publisher_t s_pub;
+
+// static void publish_temp_humidity(float temp_c, float humidity) {
+//     char payload[64];
+//     int len = snprintf(payload, sizeof(payload),
+//                         "{\"temp_c\":%.2f,\"humidity\":%.2f}",
+//                         temp_c, humidity);
+
+//     z_owned_bytes_t z_payload;
+//     z_bytes_copy_from_buf(&z_payload, (const uint8_t *)payload, (size_t)len);
+
+//     z_publisher_put_options_t options;
+//     z_publisher_put_options_default(&options);
+//     if (z_publisher_put(z_loan(s_pub), z_move(z_payload), &options) < 0) {
+//         Serial.println("Zenoh publish failed");
+//     }
+// }
+
+// void setup() {
+//     Serial.begin(115200);
+//     delay(1000);
+
+//     dht.begin();
+
+//     z_owned_config_t config;
+//     z_config_default(&config);
+//     zp_config_insert(z_loan_mut(config), Z_CONFIG_MODE_KEY, ZENOH_MODE);
+//     if (strlen(ZENOH_LOCATOR) > 0) {
+//         zp_config_insert(z_loan_mut(config), Z_CONFIG_CONNECT_KEY, ZENOH_LOCATOR);
+//     }
+
+//     if (z_open(&s_session, z_move(config), NULL) < 0) {
+//         Serial.println("Zenoh session open failed");
+//         while (1) { delay(1000); }
+//     }
+
+//     if (zp_start_read_task(z_loan_mut(s_session), NULL) < 0 ||
+//         zp_start_lease_task(z_loan_mut(s_session), NULL) < 0) {
+//         Serial.println("Zenoh background tasks failed to start");
+//         while (1) { delay(1000); }
+//     }
+
+//     z_view_keyexpr_t ke;
+//     z_view_keyexpr_from_str(&ke, ZENOH_KEY);
+
+//     if (z_declare_publisher(z_loan(s_session), &s_pub, z_loan(ke), NULL) < 0) {
+//         Serial.println("Zenoh publisher declare failed");
+//         while (1) { delay(1000); }
+//     }
+
+//     Serial.println("Setup complete, starting publish loop");
+// }
+
+// void loop() {
+//     float humidity = dht.readHumidity();
+//     float temp_c = dht.readTemperature();
+
+//     if (isnan(humidity) || isnan(temp_c)) {
+//         Serial.println("DHT22 read failed");
+//     } else {
+//         Serial.printf("temp_c=%.2f humidity=%.2f\n", temp_c, humidity);
+//         publish_temp_humidity(temp_c, humidity);
+//     }
+
+//     delay(2000);
+// }
+
+
+
+
+
+// // #include "esp_err.h"
+// // #include "freertos/FreeRTOS.h"
+// // #include "freertos/task.h"
+// // #include <zenoh-pico.h>
+
+// // /*
+// //  * Quick smoke test for two things at once:
+// //  *   1. ESP_ERR_NOT_ALLOWED actually exists (the whole reason for this
+// //  *      migration -- framework=espidf should give current IDF headers,
+// //  *      independent of Arduino-core versioning).
+// //  *   2. zenoh-pico's headers/library actually resolve under
+// //  *      framework=espidf via the same lib_deps mechanism used for the
+// //  *      Arduino version -- per zenoh-pico's own README, that's the
+// //  *      documented way to use it here, not an ESP Component Registry
+// //  *      entry or a hand-built components/ folder.
+// //  *
+// //  * Deliberately not opening a real zenoh session yet -- that's the next
+// //  * step once this confirms the library actually builds and links here.
+// //  * The eclipse-zenoh/zenoh-pico#407 crash report (plain ESP-IDF, socket
+// //  * setup) means "it built" isn't the same as "it works" -- worth treating
+// //  * session-open/publish as its own separate test once we get there.
+// //  */
+// // void app_main(void)
+// // {
+// //     esp_err_t err = ESP_ERR_NOT_ALLOWED;
+// //     printf("ESP_ERR_NOT_ALLOWED = %d (%s)\n", err, esp_err_to_name(err));
+
+// //     z_owned_config_t z_config;
+// //     z_config_default(&z_config);
+// //     printf("zenoh-pico: z_config_default() ran without crashing\n");
+// //     z_drop(z_config_move(&z_config));
+
+// //     while (1) {
+// //         vTaskDelay(pdMS_TO_TICKS(1000));
+// //     }
+// // }

@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{ "name": "python", "path": "python" },
+		{ "name": "c", "path": "c" },
+		{ "name": "cpp", "path": "cpp" },
+		{ "name": "esp32", "path": "esp32" },
+		{ "name": "esp32-idf", "path": "esp32-idf" },
+		{ "name": "root", "path": "." }
+	],
+	"extensions": {
+		"recommendations": [
+			"platformio.platformio-ide",
+			"ms-python.python",
+			"ms-python.vscode-pylance",
+			"ms-vscode.cpptools",
+			"ms-vscode.cmake-tools"
+		]
+	}
+}
