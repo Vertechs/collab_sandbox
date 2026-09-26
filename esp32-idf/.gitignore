@@ -4,3 +4,5 @@
 .vscode/launch.json
 .vscode/ipch
 components
+sdkconfig.esp32dev*
+sdkconfig.esp32dev
