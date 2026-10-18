@@ -14,10 +14,13 @@
 #include "nvs_flash.h"
 #include "driver/gpio.h"
 
+
+#include "wifi_setup.h"
 #include "dht.h"
 #include "thermostat.h"
 
 #include "zenoh-pico.h"
+#include "zenoh_setup.h"
 
 // Wifi Vars
 static const char* WIFI_ID = CONFIG_WIFI_SSID;
@@ -44,8 +47,44 @@ static const uint32_t INTVL_DISPLAYUPDATE = 200;
 static therm_ctrl_intlkd_t therm_ctrl;
 static therm_sensor_t therm_dht;
 static therm_sensor_t therm_tmp;
+static z_main_ctx_t zenoh_ctx;
+
+// Logger
+static const char *TAG = "MAIN";
+
+void log_performance(void){
+    ESP_LOGI(TAG, "Free heap size: %d", xPortGetFreeHeapSize());
+    ESP_LOGI(TAG, "Execution time: %d", xTaskGetTickCount());
+}
+
 
 void app_main(void)
 {
-    while(1);
+    // Init NVS for wifi driver, abort if re-init fails or other error
+    // REMOVE, do this in wifi setup now
+    // esp_err_t err_catch = nvs_flash_init();
+    // if (err_catch == ESP_ERR_NVS_NO_FREE_PAGES || err_catch == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    //     ESP_ERROR_CHECK(nvs_flash_erase());
+    //     ESP_ERROR_CHECK(nvs_flash_init());
+    // }
+    // ESP_ERROR_CHECK(err_catch);
+    
+    // fall back to local control if wifi init fails
+    // TODO handle re-try timer
+    esp_err_t err_catch = wifi_setup(WIFI_ID, WIFI_PASS);
+    if (err_catch != ESP_OK) {
+        ESP_LOGE(TAG, "WiFi setup failed");
+    }
+
+    // TODO, why is this delay here
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+
+    if (wifi_get_ip() != NULL) {
+        if(zenoh_setup(&zenoh_ctx, wifi_get_ip()) != ESP_OK) {
+            ESP_LOGE(TAG, "Zenoh setup failed");
+        }
+    }
+
+    
+
 }

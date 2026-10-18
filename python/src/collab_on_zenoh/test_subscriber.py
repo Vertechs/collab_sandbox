@@ -14,15 +14,15 @@ class signal_consumer():
 
     def loop(self):
         conf = zenoh.Config()
-        conf.insert_json5("listen/endpoints", '["tcp/10.0.0.33:7447"]')
+        conf.insert_json5("listen/endpoints", '["tcp/10.0.0.11:7447"]')
         with zenoh.open(conf) as session:
             with session.declare_subscriber(self.key) as subsc:
                 for sample in subsc:
-                    val = "null"#struct.unpack("f",sample.payload.to_bytes())
-                    print(f"At {sample.timestamp}, {sample.key_expr} said {sample.payload}")
+                    val = struct.unpack("<I",sample.payload.to_bytes())
+                    print(f"At {sample.timestamp}, {sample.key_expr} said {val}")
                 
                 
 if __name__ == "__main__":
     tname = "test" #dt.datetime.now().strftime("HH:MM:SS")
-    sc = signal_consumer("esp_test","temp1")
+    sc = signal_consumer("web/sandbox","clock/time")
     sc.loop()
