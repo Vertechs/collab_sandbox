@@ -6,11 +6,34 @@ import datetime as dt
 import struct
 import time
 
-import collab_on_zenoh.global_channels as gc
+import collab_on_zenoh.zvez_global_channels as gc
+from collab_on_zenoh.zvez_node import *
+
 
 CLOCK_KEYS = {'now_s': 'time', 'now_ms': 'time_ms'}
+UTILITY_KEY = "@zvez/util/"
 
-class WebMasterClock():
+
+class ZvezClockNode(ZvezNode):
+    def __init__(self, domain: str):
+        super().__init__()
+
+        self.parent_key = zenoh.KeyExpr("/".join((domain,"clock")))
+
+        self.register_producer(self.parent_key.join("time_s"))
+        self.register_producer(self.parent_key.join("time_ms"))
+
+    def spin(self):
+        ts = dt.datetime.now(dt.timezone.utc).timestamp()
+
+        self.send_sample_now(self.parent_key.join("time_s"), struct.pack('<I', int(ts)))
+        self.send_sample_now(self.parent_key.join("time_ms"), struct.pack('<I', int(ts%1.0 * 1000)))
+
+        print("Time: {} | peers : {}".format(ts, self.session.info.peers_zid()))
+        
+
+
+class ZvezStandaloneMasterClock():
 
     def __init__(self, domain:str) -> None:
         self.parent_key = "/".join((domain,"clock"))
@@ -73,5 +96,7 @@ class WebMasterClock():
 
 
 if __name__ == "__main__":
-    with WebMasterClock("web/sandbox") as mc:
+    # with ZvezStandaloneMasterClock(CLOCK_KEY) as mc:
+    #     mc.spin()
+    with ZvezClockNode(UTILITY_KEY) as mc:
         mc.spin()

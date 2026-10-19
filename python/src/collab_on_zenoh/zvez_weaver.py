@@ -6,18 +6,16 @@ import numpy
 import datetime as dt
 import struct
 import time
+import logging
 
 from typing import Callable
 from dataclasses import dataclass
 
-import collab_on_zenoh.global_channels as gc
+import collab_on_zenoh.zvez_global_channels as gc
+from collab_on_zenoh.zvez_dataclasses import *
 
-@dataclass
-class ZvezEdge:
-    def __init__(self, edge_id: int, consumer_key: zenoh.KeyExpr, producer_key: zenoh.KeyExpr):
-        self.edge_id = edge_id
-        self.consumer_key = consumer_key
-        self.producer_key = producer_key
+log = logging.getLogger(__name__)
+
 
 class ZvezWeb:
     def __init__(self, web_id: uuid.UUID):
@@ -54,13 +52,26 @@ class ZvezWeb:
         return b'LINK'+b'x\00'+self.web_id.bytes+struct.pack('<I', edge_id)+str(producer_key).encode('utf-8') + b"\x00" +str(consumer_key).encode('utf-8') + b"\x00"
 
 class ZvezWeaver:
-    def __init__(self, domain:str) -> None:
-            self.parent_key = "/".join((domain,"clock"))
+    def __init__(self) -> None:
     
             self._stop = threading.Event()
 
             self.session = zenoh.open(zenoh.Config())
             self.global_channels = gc.ZvezWeaverGlobalChannels(self.session)
+
+    def close(self):
+        self._stop.set()
+
+        self.global_channels.close()
+
+        self.session.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+    
 
 
     
