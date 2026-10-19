@@ -14,7 +14,7 @@
 
 // Wifi Vars
 const char* ssid = "Hello There";
-const char* password = "FishTreeCatLamp";
+const char* password = "variablehere";
 const char* computerIP = "10.0.0.11";  //logging computer IP
 const int udpPort = 4211;
 
