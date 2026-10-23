@@ -153,7 +153,7 @@ class ZvezWeaverGlobalChannels:
             return {'type': msg_type, 'data': msg_data}
         return None
 
-    def read_producer(self):
+    def read_producer(self) -> str | None:
         #TODO handling more than just key
         sample = self._producers_subscriber.try_recv()
         if sample:
@@ -163,7 +163,7 @@ class ZvezWeaverGlobalChannels:
             log.log(logging.DEBUG, "No producer keys available")
         return None
 
-    def read_consumer(self):
+    def read_consumer(self) ->str | None:
         #TODO handling more than just key
         sample = self._consumers_subscriber.try_recv()
         if sample:

@@ -54,7 +54,7 @@ class ZvezNode:
 
             if request['port_type'] == 'P' or request['port_type'] == 'A':
                 self.global_channels.list_produced_keys(matched_producers)
-            elif request['port_type'] == 'C' or request['port_type'] == 'A':
+            if request['port_type'] == 'C' or request['port_type'] == 'A':
                 self.global_channels.list_consumed_keys(matched_consumers)
 
         elif request['type'] == 'link':
@@ -132,7 +132,9 @@ class ZvezNode:
         if consumer_key in self.consumers:
             consumer = self.consumers[consumer_key]
             if consumer.subscriber:
-                return consumer.subscriber.recv().payload
+                sample = consumer.subscriber.try_recv()
+                if sample:
+                    return sample.payload
         return None
 
     def deactivate_consumer(self, key: zenoh.KeyExpr):

@@ -11,13 +11,15 @@ import collab_on_zenoh.zvez_global_channels as gc
 from collab_on_zenoh.zvez_node import *
 from collab_on_zenoh.zvez_weaver import *
 
-UTILITY_KEY = "@zvez/util"
+ROOT_KEY = "@zvez"
 
 class ZvezListStuff(ZvezWeaver):
     def __init__(self, domain: zenoh.KeyExpr):
         super().__init__()
 
-        self.parent_key = domain.join("clock")
+        self.parent_key = domain
+
+        self.plant_web = ZvezWeb(uuid.uuid4())
 
     def get_all_keys(self, listening_time: float):
         self.global_channels.send_echo_request(self.parent_key.join("**"), "A")
@@ -34,8 +36,36 @@ class ZvezListStuff(ZvezWeaver):
 
         return consumer_keys,producer_keys
 
+    def add_link_to_web(self, consumer_key: zenoh.KeyExpr, producer_key: zenoh.KeyExpr):
+        edge = self.plant_web.create_new_edge(consumer_key, producer_key)
+        if edge is None:
+            log.log(logging.ERROR, "Failed to create new edge, max edges reached")
+            return False
 
+        self.global_channels.send_link_request(self.plant_web.web_id, edge.edge_id, consumer_key, producer_key)
+        return True
 
+    def link_plant(self):
+        
+        consumer_keys, producer_keys = self.get_all_keys(5.0)
+
+        input_key = None
+        output_key = None
+
+        for key in consumer_keys:
+            if "input" in key and "plant" in key:
+                print("Found plant input key: {}".format(key))
+                input_key = zenoh.KeyExpr(key)
+
+        for key in producer_keys:
+            if "output" in key and "command" in key:
+                print("Found operator command key: {}".format(key))
+                output_key = zenoh.KeyExpr(key)
+
+        if input_key is not None and output_key is not None:
+            log.log(logging.INFO, "Linking plant input key {} to operator output key {}".format(input_key, output_key))
+            self.add_link_to_web(input_key, output_key)
+       
     def __enter__(self):
         return self
 
@@ -45,7 +75,8 @@ class ZvezListStuff(ZvezWeaver):
         
 
 if __name__ == "__main__":
-    with ZvezListStuff(zenoh.KeyExpr(UTILITY_KEY)) as lister:
+    with ZvezListStuff(zenoh.KeyExpr(ROOT_KEY)) as lister:
         while 1:
             print(lister.get_all_keys(3.0))
+            print(lister.session.info.peers_zid())
             time.sleep(5.0)
