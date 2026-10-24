@@ -12,9 +12,9 @@ import logging
 
 from scipy.signal import cont2discrete
 
-import collab_on_zenoh.zvez_global_channels as gc
-from collab_on_zenoh.zvez_node import *
-from collab_on_zenoh.zvez_weaver import *
+import collab_on_zenoh.zvez_modules.zvez_global_channels as gc
+from collab_on_zenoh.zvez_modules.zvez_node import *
+from collab_on_zenoh.zvez_modules.zvez_weaver import *
 
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)-7s %(name)s: %(message)s",)
 log = logging.getLogger(__name__)

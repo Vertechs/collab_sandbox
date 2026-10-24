@@ -1,5 +1,6 @@
 ## Next To Do
 ----
+Test new consumer/producer handling
 More nodes, test linking
 
 ## In Progress

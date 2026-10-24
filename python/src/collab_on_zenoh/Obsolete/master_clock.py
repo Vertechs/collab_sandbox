@@ -6,8 +6,8 @@ import datetime as dt
 import struct
 import time
 
-import collab_on_zenoh.zvez_global_channels as gc
-from collab_on_zenoh.zvez_node import *
+import collab_on_zenoh.zvez_modules.zvez_global_channels as gc
+from collab_on_zenoh.zvez_modules.zvez_node import *
 
 
 CLOCK_KEYS = {'now_s': 'time', 'now_ms': 'time_ms'}
