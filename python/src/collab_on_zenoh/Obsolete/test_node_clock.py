@@ -7,9 +7,9 @@ import struct
 import time
 import logging
 
-import collab_on_zenoh.zvez_global_channels as gc
-from collab_on_zenoh.zvez_node import *
-from collab_on_zenoh.zvez_weaver import *
+import collab_on_zenoh.zvez_modules.zvez_global_channels as gc
+from collab_on_zenoh.zvez_modules.zvez_node import *
+from collab_on_zenoh.zvez_modules.zvez_weaver import *
 
 UTILITY_KEY = "@zvez/util"
 

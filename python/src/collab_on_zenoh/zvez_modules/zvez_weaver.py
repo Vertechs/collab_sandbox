@@ -11,8 +11,8 @@ import logging
 from typing import Callable
 from dataclasses import dataclass
 
-import collab_on_zenoh.zvez_global_channels as gc
-from collab_on_zenoh.zvez_dataclasses import *
+from . import zvez_global_channels as gc
+from .zvez_dataclasses import *
 
 log = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class ZvezWeb:
         edge_id = self.get_new_edge_id()
         if edge_id is None:
             return None
-        edge = ZvezEdge(edge_id, consumer_key, producer_key)
+        edge = ZvezEdge(self.web_id, edge_id, consumer_key, producer_key)
         self.edges.append(edge)
         return edge
 
