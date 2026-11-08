@@ -20,7 +20,7 @@ from collab_on_zenoh.zvez_modules.zvez_weaver import *
 from collab_on_zenoh.zvez_modules.zvez_dataclasses import *
 
 logging.basicConfig(
-    level=logging.WARNING,
+    level=logging.DEBUG,
     format="%(asctime)s %(levelname)-7s %(name)s: %(message)s",
 )
 log = logging.getLogger(__name__)

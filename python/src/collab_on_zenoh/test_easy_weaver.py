@@ -31,9 +31,9 @@ class ZvezListStuff(ZvezWeaver):
         consumer_keys = set()
         producer_keys = set()
         while (dt.datetime.now(dt.timezone.utc).timestamp() - start_read) < (listening_time):
-            consumer = self.global_channels.read_consumer()
+            consumer = self.global_channels.recv_consumer()
             if consumer: consumer_keys.add(consumer)
-            producer = self.global_channels.read_producer()
+            producer = self.global_channels.recv_producer()
             if producer: producer_keys.add(producer)
             time.sleep(0.1)
 
@@ -51,7 +51,7 @@ class ZvezListStuff(ZvezWeaver):
     def get_all_responses(self):
         responses = []
         while True:
-            response = self.global_channels.read_response()
+            response = self.global_channels.recv_response()
             if not response:
                 break
             responses.append(response)

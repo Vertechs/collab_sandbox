@@ -12,9 +12,9 @@ from collections.abc import Callable
 from enum import Enum
 from dataclasses import dataclass, field
 
-
+TRACE_LEVEL = 5
 # enums
-
+# TODO organize these better and decide on a standard for on-wire text
 class RequestType(str, Enum):
     ECHO = "ECHO"
     LINK = "LINK"
@@ -40,11 +40,16 @@ class ConsumerType(str, Enum):
     RATE_TRIGGERED = 'rate'
     RECV_TRIGGERED = 'receive'
 
-
+class LinkHealth(str, Enum):
+    INIT = "INIT" # no link request sent yet
+    OKAY = "OKAY" # link is established and nodes communicating
+    FAILED = "FAIL" # link was attempted but could not be created
+    REQUESTED = "RQST" # link request has been sent, no response yet
+    REMOVED = "UNLK" # unlink request has been sent and successfully processed
+    REM_PENDING = "REUL" # unlink request has been sent but not yet processed
 
 
 # web structs
-
 
 @dataclass
 class ZvezEdge:
@@ -52,13 +57,14 @@ class ZvezEdge:
     edge_id: int #TODO maybe not needed? Key pair should be unique
     consumer_key: zenoh.KeyExpr
     producer_key: zenoh.KeyExpr
+    health: LinkHealth 
 
 
 # node structs
 
 
 @dataclass
-class ZvezProducer:
+class ZvezNodeProducer:
     # port information
     key_expr: zenoh.KeyExpr
     data_struct: str | None = None
@@ -74,7 +80,7 @@ class ZvezProducer:
 
 
 @dataclass
-class ZvezConsumer:
+class ZvezNodeConsumer:
     # port information
     key_expr: zenoh.KeyExpr
     data_struct: str | None = None
@@ -90,6 +96,12 @@ class ZvezConsumer:
     sample_queue : deque[zenoh.Sample] = field(default_factory=deque)
     sample_handler: Callable[[zenoh.Sample], None] | None = None
 
+@dataclass
+class ZvezWebPortEntry:
+    # port information
+    key_expr: zenoh.KeyExpr
+    data_struct: str | None = None
+    description: str | None = None
 
 # global channel messages
 

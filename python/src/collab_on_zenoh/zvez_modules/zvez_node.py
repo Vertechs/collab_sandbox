@@ -36,8 +36,8 @@ class ZvezNode:
         self._consume_thread: threading.Thread | None = None
         self._produce_thread: threading.Thread | None = None
 
-        self.producers: dict[zenoh.KeyExpr, ZvezProducer] = {}
-        self.consumers: dict[zenoh.KeyExpr, ZvezConsumer] = {}
+        self.producers: dict[zenoh.KeyExpr, ZvezNodeProducer] = {}
+        self.consumers: dict[zenoh.KeyExpr, ZvezNodeConsumer] = {}
         self.edges: list[ZvezEdge] = []
 
         self.session = zenoh.open(zenoh.Config())
@@ -49,7 +49,8 @@ class ZvezNode:
     # =============
     def start(self):
         if self._global_thread is not None:
-            return
+            return #TODO check other threads also
+        
         self._global_thread = threading.Thread(
             target=self._process_global_channels,
             name=f"ZvezNodeGlobalChannelThread-{id(self)}",
@@ -252,7 +253,7 @@ class ZvezNode:
     ):
         if key in self.producers:
             return
-        self.producers[key] = ZvezProducer(
+        self.producers[key] = ZvezNodeProducer(
             key_expr=key,
             sample_generator=sample_generator,
             sample_interval=sample_interval,
@@ -278,7 +279,7 @@ class ZvezNode:
             # TODO can optimize response times for rate trigger with better thread timeouts and wake from _receive
             self._stop.wait(PRODUCER_INTERVAL)
 
-    def _producer_generate_sample(self, producer: ZvezProducer):
+    def _producer_generate_sample(self, producer: ZvezNodeProducer):
         # if sample interval is 0, assume user triggered
         # TODO add producer types and queues maybe
         if (
@@ -357,7 +358,7 @@ class ZvezNode:
             case _:
                 queue_length: int = CONSUMER_RING_SIZE
 
-        consumer = ZvezConsumer(
+        consumer = ZvezNodeConsumer(
             key_expr=key, sample_handler=sample_handler, queue_type=queue_type
         )
         consumer.sample_queue = deque(maxlen=queue_length)
@@ -419,7 +420,7 @@ class ZvezNode:
                         consumer, consumer.sample_queue.popleft()
                     )
 
-    def _consumer_handler_safe(self, consumer: ZvezConsumer, sample: zenoh.Sample):
+    def _consumer_handler_safe(self, consumer: ZvezNodeConsumer, sample: zenoh.Sample):
         if consumer.sample_handler:
             try:
                 consumer.sample_handler(sample)

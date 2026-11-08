@@ -88,6 +88,7 @@ class ZvezNodeGlobalChannels:
         return request
 
     def send_response(self, msg_type:str, web_id:uuid.UUID, edge_id:int, status:str):
+        # TODO this is only for link responses
         self._responses_publisher.put(
             msg_type.encode('utf-8') + b"\x00" +
             web_id.bytes + 
@@ -96,12 +97,14 @@ class ZvezNodeGlobalChannels:
         )
 
     def list_produced_keys(self, keys_to_publish:list[zenoh.KeyExpr]):
+        log.log(logging.DEBUG, f"Listing produced keys: {keys_to_publish}")
         # TODO publish things besides just the key
         for key in keys_to_publish:
             self._producers_publisher.put(bytes(str(key), 'utf-8'))
 
 
     def list_consumed_keys(self, keys_to_publish:list[zenoh.KeyExpr]):
+        log.log(logging.DEBUG, f"Listing consumed keys: {keys_to_publish}")
         # TODO publish things besides just the key
         for key in keys_to_publish:
             self._consumers_publisher.put(bytes(str(key), 'utf-8'))
@@ -155,34 +158,47 @@ class ZvezWeaverGlobalChannels:
             str(match_key).encode('utf-8') + b"\x00"
         )
 
-    def read_response(self):
+    def recv_response(self):
         sample = self._responses_subscriber.try_recv()
-        if sample:
-            msg_str = sample.payload.to_bytes()
-            msg_type = msg_str[0:msg_str.index(b"\x00")]
-            msg_data = msg_str[msg_str.index(b"\x00")+1:]
-            log.log(logging.DEBUG, "Reading response: type={}, data={}".format(msg_type, msg_data))
-            #TODO parsing this by message type
+        if not sample:
+            return None
 
-            return {'type': msg_type, 'data': msg_data}
-        return None
+        msg_str = sample.payload.to_bytes()
+        msg_type = msg_str[0:msg_str.index(b"\x00")]
+        msg_data = msg_str[msg_str.index(b"\x00")+1:]
+        log.log(logging.DEBUG, "Reading response: type={}, data={}".format(msg_type, msg_data))
 
-    def read_producer(self) -> str | None:
+
+        if msg_type == b"LINK":
+            request = {
+                "type": RequestType.LINK,
+                "webID": uuid.UUID(bytes=struct.unpack("16s", msg_data[0:16])[0]),
+                "edgeID": struct.unpack("<L", msg_data[16:20])[0],
+                "status": LinkStatus(msg_data[20:])
+            }
+        else:
+            log.log(logging.WARNING, f"Unknown response type: {msg_type}")
+            return None
+
+        return request
+
+
+    def recv_producer(self) -> dict | None:
         #TODO handling more than just key
         sample = self._producers_subscriber.try_recv()
         if sample:
             log.log(logging.DEBUG, "Reading producer: {}".format(sample.payload.to_string()))
-            return sample.payload.to_string()
+            return {"key":sample.payload.to_string()}
         else:
             log.log(logging.DEBUG, "No producer keys available")
         return None
 
-    def read_consumer(self) ->str | None:
+    def recv_consumer(self) -> dict | None:
         #TODO handling more than just key
         sample = self._consumers_subscriber.try_recv()
         if sample:
             log.log(logging.DEBUG, "Reading consumer: {}".format(sample.payload.to_string()))
-            return sample.payload.to_string()
+            return {"key":sample.payload.to_string()}
         else:
             log.log(logging.DEBUG, "No consumer keys available")
         return None
